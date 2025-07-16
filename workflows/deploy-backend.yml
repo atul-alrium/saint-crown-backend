@@ -1,0 +1,44 @@
+name: Deploy Backend to Staging
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Copy backend to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          source: "."
+          target: /home/${{ secrets.SSH_USERNAME }}/saint-crown-backend
+
+      - name: SSH into EC2 and run backend
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            cd saint-crown-backend
+            echo "${{ secrets.BACKEND_ENV }}" > .env
+            npm install
+            pm2 delete all || true
+            pm2 start direct-file-server.js --name saint-crown-backend
