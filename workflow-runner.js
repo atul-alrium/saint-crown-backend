@@ -17,7 +17,7 @@ app.use('/attached_assets', express.static(path.join(__dirname, 'attached_assets
 
 const cors=require('cors')
 app.use(cors({
-  origin: 'http://192.168.0.117:5173', // <-- match exactly where your frontend runs
+  origin: 'https://stage.saintcrownafd1.org', // <-- match exactly where your frontend runs
   credentials: true
 }));
 
