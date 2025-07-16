@@ -18,6 +18,7 @@ app.use('/attached_assets', express.static(path.join(__dirname, 'attached_assets
 const cors=require('cors')
 app.use(cors({
   origin: 'https://stage.saintcrownafd1.org', // <-- match exactly where your frontend runs
+  // origin: 'http://127.0.0.1:5173', // <-- match exactly where your frontend runs
   credentials: true
 }));
 
@@ -251,7 +252,7 @@ app.post('/api/afd1/logout', (req, res) => {
   res.clearCookie('token', {
     httpOnly: true,
     secure: true,
-    sameSite: 'strict'
+    sameSite: 'None'
   });
   res.json({ success: true, message: 'Logged out successfully' });
 });
