@@ -1,0 +1,41 @@
+name: Deploy Backend to Staging
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH into server and deploy backend
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            sudo su <<'EOF'
+            set -e
+            BACKEND_DIR="/var/www/html/saint-crown-backend"
+
+            echo "Navigating to backend directory..."
+            cd $BACKEND_DIR
+
+            echo "Stopping PM2 process as root..."
+            pm2 stop saint-crown-backend || true
+
+            echo "Pulling latest code..."
+            git fetch origin main
+            git pull origin main
+
+            echo "Installing dependencies..."
+            npm install
+
+            echo "Starting backend with PM2 (as root)..."
+            pm2 start workflow-runner.js --name saint-crown-backend
+
+            echo "Backend deployed successfully as root"
+            EOF
